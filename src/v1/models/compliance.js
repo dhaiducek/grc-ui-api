@@ -6,7 +6,7 @@
  * Use, duplication or disclosure restricted by GSA ADP Schedule
  * Contract with IBM Corp.
  ******************************************************************************* */
-/* Copyright (c) 2021 Red Hat, Inc. */
+/* Copyright (c) 2020 Red Hat, Inc. */
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { ApolloError } from 'apollo-errors';
@@ -116,7 +116,7 @@ export default class ComplianceModel {
     if (response.code || response.message) {
       throw new Error(`GRC ERROR ${response.code} - ${response.message}`);
     }
-    const errors = Promise.resolve(this.deleteComplianceResource(input.resources));
+    const errors = await this.deleteComplianceResource(input.resources);
     if (errors && errors.length > 0) {
       throw new Error(`GRC ERROR: Unable to delete application resource(s) - ${JSON.stringify(errors)}`);
     }
@@ -215,9 +215,9 @@ export default class ComplianceModel {
 
     if (namespace) {
       if (name) {
-        policies = Promise.resolve(this.getSinglePolicy(policies, name, urlNS));
+        policies = await this.getSinglePolicy(policies, name, urlNS);
       } else {
-        policies = Promise.resolve(this.getPolicyListSingleNS(urlNS));
+        policies = await this.getPolicyListSingleNS(urlNS);
       }
     } else {
       const {
@@ -228,9 +228,9 @@ export default class ComplianceModel {
       clusterNS = clusterNSTemp;
       clusterConsoleURL = clusterConsoleURLTemp;
       if (name) {
-        policies = Promise.resolve(this.getSinglePolicyAllNS(name, allNonClusterNS));
+        policies = await this.getSinglePolicyAllNS(name, allNonClusterNS);
       } else {
-        policies = Promise.resolve(this.getPolicyListAllNS(allNonClusterNS));
+        policies = await this.getPolicyListAllNS(allNonClusterNS);
       }
     }
 
@@ -734,7 +734,7 @@ export default class ComplianceModel {
       return resultsWithPolicyName;
     }
     const allClusterNS = [cluster];
-    const policyResponses = Promise.resolve(this.getPolicyFromClusterNS(allClusterNS, hubNamespace, policyName));
+    const policyResponses = await this.getPolicyFromClusterNS(allClusterNS, hubNamespace, policyName);
     // Policy history are to be generated from all violated policies get above.
     // Current violation status are to be get from histroy[most-recent]
     const statuses = [];
@@ -766,7 +766,7 @@ export default class ComplianceModel {
     }
     // nsType === 'allClusterNS', get the list of all clusters namespaces
     const { allClusterNS, clusterConsoleURLTemp } = await getTypedNS(this.kubeConnector, 'allClusterNS');
-    const policyResponses = Promise.resolve(this.getPolicyFromClusterNS(allClusterNS, hubNamespace, policyName));
+    const policyResponses = await this.getPolicyFromClusterNS(allClusterNS, hubNamespace, policyName);
     // Policy history are to be generated from all compliant/non-compliant policies get above.
     // Current violation status are to be get from histroy[most-recent]
     const status = [];
